@@ -1,20 +1,15 @@
 FROM python:3.12-slim
 
-# Install wkhtmltopdf deps and wkhtmltopdf
+# Install wkhtmltopdf from Debian repositories with required fonts/libs
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-    xz-utils wget gnupg ca-certificates \
-    libjpeg62-turbo libxrender1 libxext6 libfontconfig1 libfreetype6 \
-    libx11-6 libxcb1 libxau6 libxdmcp6 \
+    wkhtmltopdf \
+    fonts-dejavu \
+    libxrender1 libxext6 libfontconfig1 libfreetype6 \
+    libx11-6 libxcb1 libxau6 libxdmcp6 ca-certificates wget gnupg \
  && rm -rf /var/lib/apt/lists/*
 
-# wkhtmltopdf static build
-RUN wget -O /tmp/wkhtml.deb https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.bookworm_amd64.deb \
- && apt-get update \
- && apt-get install -y --no-install-recommends /tmp/wkhtml.deb \
- && rm -rf /var/lib/apt/lists/* /tmp/wkhtml.deb
-
-ENV WKHTMLTOPDF_PATH=/usr/local/bin/wkhtmltopdf
+ENV WKHTMLTOPDF_PATH=/usr/bin/wkhtmltopdf
 
 WORKDIR /app
 COPY requirements.txt ./
