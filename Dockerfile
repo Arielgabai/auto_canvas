@@ -1,12 +1,10 @@
-FROM python:3.12-slim
+FROM python:3.12-jammy
 
-# Install wkhtmltopdf from Debian repositories with required fonts/libs
+# Install wkhtmltopdf from Ubuntu repositories with required fonts
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
     wkhtmltopdf \
-    fonts-dejavu \
-    libxrender1 libxext6 libfontconfig1 libfreetype6 \
-    libx11-6 libxcb1 libxau6 libxdmcp6 ca-certificates wget gnupg \
+    fonts-dejavu fontconfig ca-certificates wget \
  && rm -rf /var/lib/apt/lists/*
 
 ENV WKHTMLTOPDF_PATH=/usr/bin/wkhtmltopdf
