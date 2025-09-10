@@ -1,12 +1,12 @@
-FROM python:3.12-jammy
+FROM python:3.12-slim
 
-# Install wkhtmltopdf from Ubuntu repositories with required fonts
+# Minimal system deps for reportlab and networking
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-    wkhtmltopdf \
-    fonts-dejavu fontconfig ca-certificates wget \
+    fonts-dejavu fontconfig ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
+# wkhtmltopdf optional; fallback to ReportLab if missing
 ENV WKHTMLTOPDF_PATH=/usr/bin/wkhtmltopdf
 
 WORKDIR /app
