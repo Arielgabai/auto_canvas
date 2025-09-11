@@ -6,6 +6,7 @@ from typing import List, Dict, Optional
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 from google.oauth2 import service_account
+import base64
 
 from .config import load_settings
 
@@ -15,10 +16,29 @@ SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 def _service():
     s = load_settings()
-    keyfile = os.getenv("GDRIVE_SERVICE_ACCOUNT_JSON", "")
-    if not keyfile or not os.path.exists(keyfile):
-        raise RuntimeError("GDRIVE_SERVICE_ACCOUNT_JSON not set or file missing")
-    creds = service_account.Credentials.from_service_account_file(keyfile, scopes=SCOPES)
+    keyfile = os.getenv("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
+    keyjson = os.getenv("GDRIVE_SERVICE_ACCOUNT_JSON_CONTENT", "").strip()
+    keyb64 = os.getenv("GDRIVE_SERVICE_ACCOUNT_JSON_BASE64", "").strip()
+
+    temp_path = None
+    if keyfile and os.path.exists(keyfile):
+        path_to_use = keyfile
+    elif keyjson:
+        temp_path = "/tmp/gdrive_sa.json"
+        os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+        with open(temp_path, "w", encoding="utf-8") as f:
+            f.write(keyjson)
+        path_to_use = temp_path
+    elif keyb64:
+        temp_path = "/tmp/gdrive_sa.json"
+        os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+        with open(temp_path, "wb") as f:
+            f.write(base64.b64decode(keyb64))
+        path_to_use = temp_path
+    else:
+        raise RuntimeError("GDRIVE_SERVICE_ACCOUNT_JSON not set or file missing; provide path, JSON content, or BASE64.")
+
+    creds = service_account.Credentials.from_service_account_file(path_to_use, scopes=SCOPES)
     # Optionally impersonate user: subject=os.getenv("GDRIVE_IMPERSONATE_EMAIL")
     return build("drive", "v3", credentials=creds, cache_discovery=False)
 
