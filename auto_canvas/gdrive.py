@@ -21,6 +21,12 @@ def _service():
     keyb64 = os.getenv("GDRIVE_SERVICE_ACCOUNT_JSON_BASE64", "").strip()
 
     temp_path = None
+    # Auto-detect secret file under common paths (Render Secret Files)
+    if (not keyfile) and os.path.isdir("/etc/secrets"):
+        for name in os.listdir("/etc/secrets"):
+            if name.endswith(".json"):
+                keyfile = os.path.join("/etc/secrets", name)
+                break
     if keyfile and os.path.exists(keyfile):
         path_to_use = keyfile
     elif keyjson:
@@ -36,7 +42,9 @@ def _service():
             f.write(base64.b64decode(keyb64))
         path_to_use = temp_path
     else:
-        raise RuntimeError("GDRIVE_SERVICE_ACCOUNT_JSON not set or file missing; provide path, JSON content, or BASE64.")
+        raise RuntimeError(
+            "GDRIVE_SERVICE_ACCOUNT_JSON not set or file missing; set path to secret file, or provide JSON content via GDRIVE_SERVICE_ACCOUNT_JSON_CONTENT or base64 via GDRIVE_SERVICE_ACCOUNT_JSON_BASE64."
+        )
 
     creds = service_account.Credentials.from_service_account_file(path_to_use, scopes=SCOPES)
     # Optionally impersonate user: subject=os.getenv("GDRIVE_IMPERSONATE_EMAIL")
