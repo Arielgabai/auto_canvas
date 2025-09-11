@@ -7,7 +7,9 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 # wkhtmltopdf optional; fallback to ReportLab if missing
-ENV WKHTMLTOPDF_PATH=/usr/bin/wkhtmltopdf
+ENV WKHTMLTOPDF_PATH=/usr/bin/wkhtmltopdf \
+    PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING=utf-8
 
 WORKDIR /app
 COPY requirements.txt ./
@@ -30,9 +32,9 @@ ENV PORT=8000
 # Start the Drive watcher if GDRIVE_INPUT_FOLDER_ID is set, else local watcher
 CMD ["/bin/bash", "-lc", "\
  if [ -n \"$GDRIVE_INPUT_FOLDER_ID\" ]; then \
-   python -m auto_canvas.watch_gdrive; \
+   python -u -m auto_canvas.watch_gdrive; \
  else \
-   python -m auto_canvas.watch; \
+   python -u -m auto_canvas.watch; \
  fi "]
 
 

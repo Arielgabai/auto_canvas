@@ -36,7 +36,7 @@ def collect_new_images() -> List[str]:
 
 def run_watcher() -> None:
     settings = load_settings()
-    print(f"Watching: {settings.input_dir} (batch={settings.batch_size})")
+    print(f"Watching: {settings.input_dir} (batch={settings.batch_size})", flush=True)
     while True:
         try:
             # First, prune state for files no longer present, so re-copied files are treated as new
@@ -44,28 +44,28 @@ def run_watcher() -> None:
             prune_state_absent_files(settings.state_file, current_files)
 
             new_files = collect_new_images()
-            print(f"New files detected: {len(new_files)}")
+            print(f"New files detected: {len(new_files)}", flush=True)
             if len(new_files) >= settings.batch_size:
                 # Process as many full batches as available, always oldest first
                 while True:
                     new_files = collect_new_images()
                     if len(new_files) < settings.batch_size:
                         break
-                    print("Evaluating oldest batch of 9 for stability...")
+                    print("Evaluating oldest batch of 9 for stability...", flush=True)
                     batch = new_files[: settings.batch_size]
                     stable = wait_until_stable(
                         batch,
                         stability_seconds=settings.stability_seconds,
                         check_interval=1.0,
                     )
-                    print(f"Stable images: {len(stable)}/{settings.batch_size}")
+                    print(f"Stable images: {len(stable)}/{settings.batch_size}", flush=True)
                     if len(stable) == settings.batch_size:
-                        print("Batch ready. Processing...")
+                        print("Batch ready. Processing...", flush=True)
                         try:
                             pdf = process_batch(stable)
-                            print(f"Done: {pdf}")
+                            print(f"Done: {pdf}", flush=True)
                         except Exception as e:
-                            print(f"Pipeline error: {e}")
+                            print(f"Pipeline error: {e}", flush=True)
                             # Stop inner loop to avoid busy retry; will retry next poll
                             break
                         # Loop again in case more than one batch is ready
@@ -73,17 +73,17 @@ def run_watcher() -> None:
                     else:
                         # Oldest batch not stable yet; wait before retry
                         break
-                print(f"Sleeping {settings.poll_interval_seconds}s...")
+                print(f"Sleeping {settings.poll_interval_seconds}s...", flush=True)
                 time.sleep(settings.poll_interval_seconds)
             else:
                 # Not enough files yet
-                print(f"Waiting for files... Sleeping {settings.poll_interval_seconds}s")
+                print(f"Waiting for files... Sleeping {settings.poll_interval_seconds}s", flush=True)
                 time.sleep(settings.poll_interval_seconds)
         except KeyboardInterrupt:
-            print("Stopped by user.")
+            print("Stopped by user.", flush=True)
             break
         except Exception as e:
-            print(f"Error in watcher: {e}")
+            print(f"Error in watcher: {e}", flush=True)
             time.sleep(settings.poll_interval_seconds)
 
 
