@@ -10,3 +10,5 @@ google-auth==2.35.0
 google-auth-httplib2==0.2.0
 google-auth-oauthlib==1.2.1
 reportlab==4.2.2
+fastapi==0.115.0
+uvicorn==0.30.6

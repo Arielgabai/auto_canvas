@@ -29,8 +29,10 @@ RUN mkdir -p "$INPUT_DIR" "$OUTPUT_PDF_DIR" "$WORK_NO_BG_DIR" "$WORK_SHADOW_DIR"
 # Render uses PORT; not needed here but harmless
 ENV PORT=8000
 
-# Start the Drive watcher if GDRIVE_INPUT_FOLDER_ID is set, else local watcher
+# Start diagnostics server and a watcher in background
+EXPOSE 8000
 CMD ["/bin/bash", "-lc", "\
+ uvicorn auto_canvas.diagnostics:app --host 0.0.0.0 --port ${PORT:-8000} & \
  if [ -n \"$GDRIVE_INPUT_FOLDER_ID\" ]; then \
    python -u -m auto_canvas.watch_gdrive; \
  else \
